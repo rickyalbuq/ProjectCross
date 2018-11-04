@@ -26,8 +26,8 @@ def escolheObstaculo(cima, baixo):
 
 #Configs de Obstaculo
 def posicaoInicial(obstaculo, direcao, pos_x):
-	pos_y = 650
-	pos_y_inverso = -50
+	pos_y = random.randrange(10)
+	pos_y_inverso = random.randrange(10)
 	obstaculoRect = obstaculo.get_rect()
 	if(direcao == 1):
 		obstaculoRect.center = (pos_x,pos_y)
@@ -46,7 +46,7 @@ def tipoPista():
 		else:
 			if(tipo == 2):
 				pista = agua
-	return pista, str(tipo)
+	return pista, tipo
 
 #Gera pistas na grade
 def geradorPista(pistas):
@@ -58,19 +58,25 @@ def geradorPista(pistas):
 
 #Config de Movimentação
 def movObstaculo(obstaculoRect, direcao, pos_y, pos_y_inverso):
-	pos_y -= random.randrange(10)
-	pos_y_inverso += random.randrange(10)
+	pos_y -= random.randint(0,20)
+	pos_y_inverso += random.randint(0,20)
+	print(pos_y_inverso)
+
 	if(direcao == 1):
-		if(pos_y <=-50):
-			pos_y = 650
+		if(pos_y < -100):
+			pos_y = 700
 		aux = obstaculoRect[0]
 		obstaculoRect = aux, pos_y
+		pos_y -= random.randrange(10)
 	else:
-		if(pos_y_inverso >=650):
-			pos_y_inverso = -50
-			aux = obstaculoRect[0]
-			obstaculoRect = aux, pos_y_inverso	
-	return obstaculoRect
+		if(direcao == 0):
+			if(pos_y_inverso >= 700):
+				print("entrou")
+				pos_y_inverso = -100
+				aux = obstaculoRect[0]
+				obstaculoRect = aux, pos_y_inverso
+				pos_y_inverso += random.randrange(20)
+	return obstaculoRect, pos_y, pos_y_inverso
 
 # --- Configs Iniciais --- #
 tela = game_init(800, 600)
@@ -93,6 +99,9 @@ obstaculos = []
 direcoes = []
 pistas = []
 tipos = []
+pos_x_lista = []
+pos_y_lista = []
+pos_y_inverso_lista = []
 
 #Sortear as Pistas e Sprites (até o numero total de pistas)
 for i in range(0,10):
@@ -100,14 +109,15 @@ for i in range(0,10):
 	pistas.append(a)
 	tipos.append(b)
 	if(tipos[i] == 0):
-		pos_x = i*40
-	else:
-		pos_x = -80
+		pos_x_lista.append(i*80)
+for i in range(0, len(pos_x_lista)):
 	c, d = escolheObstaculo(cima, baixo)
 	obstaculos.append(c)
 	direcoes.append(d)
-	g, pos_y, pos_y_inverso = posicaoInicial(obstaculos[i], direcoes[i], pos_x)
+	g, h, i = posicaoInicial(obstaculos[i], direcoes[i], pos_x_lista[i])
 	obstaculosRect.append(g)
+	pos_y_lista.append(h)
+	pos_y_inverso_lista.append(i)
 
 # --- Loop Principal --- #
 while True:
@@ -124,11 +134,21 @@ while True:
 
 	#Gera pistas
 	geradorPista(pistas)
-
 	#Loop de Mostrar Obstaculos
 	for i in range(0, len(obstaculos)):
 		tela.blit(obstaculos[i], obstaculosRect[i])
-		obstaculosRect[i] = movObstaculo(obstaculosRect[i], direcoes[i], pos_y, pos_y_inverso)
+		obstaculosRect[i], a, b = movObstaculo(obstaculosRect[i], direcoes[i], pos_y_lista[len(pos_y_lista) - 1], pos_y_inverso_lista[len(pos_y_inverso_lista) - 1])
+		#Acrescenta uma nova posição e apaga uma antiga
+		pos_y_lista.append(a)
+		deleta = pos_y_lista[i]
+		pos_y_lista.remove(deleta)
+
+		pos_y_inverso_lista.append(b)
+		deleta = pos_y_inverso_lista[i]
+		pos_y_inverso_lista.remove(deleta)
+		
+		print(pos_y_inverso_lista)
+		#print(obstaculosRect)
 		
 	#Atualizar a Tela
 	pg.display.flip()
