@@ -1,17 +1,17 @@
 import sys, time, random
 import pygame as pg
 
-#Inicialização
-def game_init(w, h):
+#Confis de Inicialização
+def game_init(l, a):
 	#Iniciar o Pygame
 	pg.init()
 	#Configs de Tela
-	width, height = w, h
-	size = width, height
+	largura, altura = l, a
+	tamanho = largura, altura
 	#Configs de Janela
-	display = pg.display.set_mode(size)
+	tela = pg.display.set_mode(tamanho)
 	pg.display.set_caption("Cross The Road")
-	return display
+	return tela
 
 #Escolha Aleatoria de Sprite
 def escolheObstaculo(cima, baixo):
@@ -33,9 +33,9 @@ def posicaoInicial(obstaculo, direcao, pos_x):
 		obstaculoRect.center = (pos_x,pos_y)
 	else:
 		obstaculoRect.center = (pos_x,pos_y_inverso)
-	return obstaculoRect.center
+	return obstaculoRect.center, pos_y, pos_y_inverso
 
-#Sortear Pista
+#Escolhe de maneira aleatoria as pistas
 def tipoPista():
 	tipo = random.randint(0,2)
 	if(tipo == 0):
@@ -48,31 +48,32 @@ def tipoPista():
 				pista = agua
 	return pista, str(tipo)
 
-#Distribuir Pistas na Grade
+#Gera pistas na grade
 def geradorPista(pistas):
 	x = 0
 	for j in range(0,10):
 		for i in range(0,6):	
-			display.blit(pistas[j], (x,i*100))
+			tela.blit(pistas[j], (x,i*100))
 		x+=80
 
-#Movimento dos Obstaculos
-def movObstaculo(obstaculoRect, direcao):
-	#Movimento Carro Subindo
+#Config de Movimentação
+def movObstaculo(obstaculoRect, direcao, pos_y, pos_y_inverso):
 	pos_y -= random.randrange(10)
 	pos_y_inverso += random.randrange(10)
 	if(direcao == 1):
 		if(pos_y <=-50):
 			pos_y = 650
-		obstaculoRect.center.y = pos_y
+		aux = obstaculoRect[0]
+		obstaculoRect = aux, pos_y
 	else:
 		if(pos_y_inverso >=650):
 			pos_y_inverso = -50
-			obstaculoRect.center.y = pos_y_inverso	
-	return obstaculoRect.center
+			aux = obstaculoRect[0]
+			obstaculoRect = aux, pos_y_inverso	
+	return obstaculoRect
 
 # --- Configs Iniciais --- #
-display = game_init(800, 600)
+tela = game_init(800, 600)
 
 #Carregar Sprites
 asfalto       = pg.image.load("Sprites/asfalto.png")
@@ -87,7 +88,7 @@ personagem    = pg.image.load("Sprites/player_01.png")
 #Criar Listas
 cima = [carroCima, caminhaoCima]
 baixo = [carroBaixo, caminhaoBaixo]
-ostaculosRect = []
+obstaculosRect = []
 obstaculos = []
 direcoes = []
 pistas = []
@@ -95,11 +96,18 @@ tipos = []
 
 #Sortear as Pistas e Sprites (até o numero total de pistas)
 for i in range(0,10):
-	pistas, tipos = tipoPista()
-	if(tipos[i]==0):
+	a, b= tipoPista()
+	pistas.append(a)
+	tipos.append(b)
+	if(tipos[i] == 0):
 		pos_x = i*40
-	obstaculos, direcoes = escolheObstaculo(cima, baixo)
-	obstaculosRect = posicaoInicial(obstaculos[i], direcoes[i], pos_x)
+	else:
+		pos_x = -80
+	c, d = escolheObstaculo(cima, baixo)
+	obstaculos.append(c)
+	direcoes.append(d)
+	g, pos_y, pos_y_inverso = posicaoInicial(obstaculos[i], direcoes[i], pos_x)
+	obstaculosRect.append(g)
 
 # --- Loop Principal --- #
 while True:
@@ -114,13 +122,13 @@ while True:
 	
 	# --- Mostrar na Tela --- #
 
-	#Gerar pistas
+	#Gera pistas
 	geradorPista(pistas)
 
 	#Loop de Mostrar Obstaculos
 	for i in range(0, len(obstaculos)):
-		display.blit(obstaculos[i],obstaculoRect[i])
-		ostaculosRect = movObstaculo(obstaculosRect[i], direcoes[i])
+		tela.blit(obstaculos[i], obstaculosRect[i])
+		obstaculosRect[i] = movObstaculo(obstaculosRect[i], direcoes[i], pos_y, pos_y_inverso)
 		
 	#Atualizar a Tela
 	pg.display.flip()
