@@ -9,11 +9,13 @@ def game_init(l, a):
 	largura, altura = l, a
 	tamanho = largura, altura
 	estado = 0
+	cont = 0
 	#Configs de Janela
 	tela = pg.display.set_mode(tamanho)
 	pg.display.set_caption("Cross The Road")
 	return tela, estado
 
+#Altera o estado atual
 def mudancaEstado(estado, mousePressed, mousePosition):
 	clicou = False
 	if(estado == 0):
@@ -29,55 +31,23 @@ def mudancaEstado(estado, mousePressed, mousePosition):
 		if(estado == 1):
 			if(mousePressed[0] == True):
 				if(mousePosition > (200, 250) and mousePosition < (280, 350)):
-					play1 = True
+					escolha = 0
+					estado = 2
+					cont = 0
 				else:
-					play1 = False
-				if(mousePosition > (360, 250) and mousePosition < (420, 350)):
-					play2 = True
-				else:
-					play2 = False
-				if(mousePosition > (520, 250) and mousePosition < (600, 350)):
-					play3 = True
-				else:
-					play3 = False
-	return estado, play1, play2, play3
-# --- Configs Iniciais --- #
+					if(mousePosition > (360, 250) and mousePosition < (420, 350)):
+						escolha = 1
+						estado = 2
+						cont = 0
+					else:	
+						if(mousePosition > (520, 250) and mousePosition < (600, 350)):
+							escolha = 2
+							estado = 2
+							cont = 0
+	return estado, escolha, cont
 
-#Resolução
-tela, estado, cont = game_init(800, 600)
-
-# --- Inicio dos Estados --- #
-
-if(estado == 0):
-	def menuPista(asfalto):
-		x = 200
-		for j in range(0,2):
-			for i in range(0,8):	
-				tela.blit(asfaltoMenu, (i*100, x))
-			x += 80
-
-	def movCarroMenu(obj1, obj2, esquerda, direita):
-		esquerda -= random.randrange(20)
-		direita  += random.randrange(20)
-		obj1Rect  = obj1.get_rect()
-		obj2Rect  = obj2.get_rect()
-		obj1Rect  = (esquerda, 280)
-		obj2Rect  = (direita, 200)
-		if(esquerda < -100):
-			esquerda = 900
-		if(direita > 900):
-			direita = -100
-		return obj1Rect, obj2Rect, esquerda, direita
-
-	logo             = pg.image.load("Sprites/logo.png")
-	asfaltoMenu      = pg.image.load("Sprites/asfalto_lado.png")
-	carroDireita     = pg.image.load("Sprites/carro_pra_direita.png")
-	carroEsquerda    = pg.image.load("Sprites/carro_pra_esquerda.png")
-	texto_menu       = pg.image.load("Sprites/texto_menu.png")
-	autor            = pg.image.load("Sprites/autor.png")
-	esquerda         = -100
-	direita          = 900
-	
+# --- Configs Resolução--- #
+tela, estado = game_init(800, 600)
 
 # --- Loop Principal --- #
 while True:
@@ -90,9 +60,43 @@ while True:
 	keys = pg.key.get_pressed()
 	mousePressed = pg.mouse.get_pressed()
 	mousePosition = pg.mouse.get_pos()
+
+	#Função de trocar estado
+	estado, escolha, cont = mudancaEstado(estado, mousePressed, mousePosition)
 	
 	# --- Mostrar na Tela --- #
 	if(estado == 0):
+		if(cont == 0):
+			def menuPista(asfalto):
+				x = 200
+				for j in range(0,2):
+					for i in range(0,8):	
+						tela.blit(asfaltoMenu, (i*100, x))
+					x += 80
+			#Movimento dos carros do menu
+			def movCarroMenu(obj1, obj2, esquerda, direita):
+				esquerda -= random.randrange(20)
+				direita  += random.randrange(20)
+				obj1Rect  = obj1.get_rect()
+				obj2Rect  = obj2.get_rect()
+				obj1Rect  = (esquerda, 280)
+				obj2Rect  = (direita, 200)
+				if(esquerda < -100):
+					esquerda = 900
+				if(direita > 900):
+					direita = -100
+				return obj1Rect, obj2Rect, esquerda, direita
+
+			logo             = pg.image.load("Sprites/logo.png")
+			asfaltoMenu      = pg.image.load("Sprites/asfalto_lado.png")
+			carroDireita     = pg.image.load("Sprites/carro_pra_direita.png")
+			carroEsquerda    = pg.image.load("Sprites/carro_pra_esquerda.png")
+			texto_menu       = pg.image.load("Sprites/texto_menu.png")
+			autor            = pg.image.load("Sprites/autor.png")
+			esquerda         = -100
+			direita          = 900
+			cont +=1
+
 		#Gerar pistas
 		menuPista(asfaltoMenu)
 		#Mover Carros
@@ -107,9 +111,39 @@ while True:
 		#Atualizar a Tela
 		pg.display.flip()
 		time.sleep(0.015)
+
 	else:
 		if(estado == 1):
 			if(cont == 0):
+				#Configs Iniciais
+				player1 = pg.image.load("Sprites/player_01.png")
+				player2 = pg.image.load("Sprites/player_02.png")
+				player3 = pg.image.load("Sprites/player_03.png")
+
+				fonte = pg.font.Font(None, 32)
+				fonte2 = pg.font.Font(None, 20)
+				colortext = (255,255,255)
+
+				texto = fonte.render("Escolha seu personagem: ", True, colortext)
+				nome1 = fonte.render("Ricky", True, colortext)
+				nome2 = fonte.render("Ana", True, colortext)
+				nome3 = fonte.render("Jorgiano", True, colortext)
+
+				cont+= 1
+			
+			#Mostrar na tela
+			tela.blit(player1, (200, 250))
+			tela.blit(player2, (360, 250))
+			tela.blit(player3, (520, 250))
+
+			tela.blit(texto, (265, 160))
+			tela.blit(nome1, (200, 360))
+			tela.blit(nome2, (360, 360))
+			tela.blit(nome3, (520, 360))	
+
+			#Atualizar na tela
+			pg.display.flip()
+			time.sleep(0.015)
 
 		if(estado == 2):
 			if(cont == 0):
@@ -257,7 +291,6 @@ while True:
 					pos_y_inverso_lista.append(i)
 
 				#Gerar Personagem
-				escolha = 2
 				personagem = escolherPersonagem(escolha)
 				personagemRect, play_pos_x, play_pos_y = inicioPersonagem(personagem)
 				cont += 1
@@ -286,5 +319,3 @@ while True:
 			#Atualizar a Tela
 			pg.display.flip()
 			time.sleep(0.015)
-
-	estado = mudancaEstado(estado, mousePressed, mousePosition)
