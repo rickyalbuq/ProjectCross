@@ -60,8 +60,6 @@ def geradorPista(pistas):
 def movObstaculo(obstaculoRect, direcao, pos_y, pos_y_inverso):
 	pos_y -= random.randint(0,20)
 	pos_y_inverso += random.randint(0,20)
-	print(pos_y_inverso)
-
 	if(direcao == 1):
 		if(pos_y < -100):
 			pos_y = 700
@@ -78,7 +76,41 @@ def movObstaculo(obstaculoRect, direcao, pos_y, pos_y_inverso):
 				pos_y_inverso += random.randrange(20)
 	return obstaculoRect, pos_y, pos_y_inverso
 
+def escolherPersonagem(escolha):
+	if(escolha == 0):
+		personagem = player1
+	else:
+		if(escolha == 1):
+			personagem = player2
+		else:
+			if(escolha == 2):
+				personagem = player3
+	return personagem
+
+def inicioPersonagem(personagem):
+	play_pos_x = 0
+	play_pos_y = 300
+	personagemRect = personagem.get_rect()
+	personagemRect.center = (play_pos_x, play_pos_y)
+	return personagemRect.center, play_pos_x, play_pos_y
+	
+def movPersonagem(personagemRect, play_pos_x, play_pos_y):
+	if keys[pg.K_RIGHT]:
+		play_pos_x+= 80
+	if keys[pg.K_UP]:
+		play_pos_y-= 100
+	if keys[pg.K_DOWN]:
+		play_pos_y+= 100
+	personagemRect = (play_pos_x, play_pos_y)
+	return personagemRect, play_pos_x, play_pos_y
+
+
+
 # --- Configs Iniciais --- #
+
+
+
+#Resolução
 tela = game_init(800, 600)
 
 #Carregar Sprites
@@ -89,7 +121,9 @@ carroCima     = pg.image.load("Sprites/carro_pra_cima.png")
 carroBaixo    = pg.image.load("Sprites/carro_pra_baixo.png")
 caminhaoCima  = pg.image.load("Sprites/caminhao_pra_cima.png")
 caminhaoBaixo = pg.image.load("Sprites/caminhao_pra_baixo.png")
-personagem    = pg.image.load("Sprites/player_01.png")
+player1       = pg.image.load("Sprites/player_01.png")
+player2       = pg.image.load("Sprites/player_02.png")
+player3       = pg.image.load("Sprites/player_03.png")
 
 #Criar Listas
 cima = [carroCima, caminhaoCima]
@@ -119,6 +153,11 @@ for i in range(0, len(pos_x_lista)):
 	pos_y_lista.append(h)
 	pos_y_inverso_lista.append(i)
 
+#Gerar Personagem
+escolha = 2
+personagem = escolherPersonagem(escolha)
+personagemRect, play_pos_x, play_pos_y = inicioPersonagem(personagem)
+
 # --- Loop Principal --- #
 while True:
 
@@ -134,22 +173,24 @@ while True:
 
 	#Gera pistas
 	geradorPista(pistas)
+
 	#Loop de Mostrar Obstaculos
 	for i in range(0, len(obstaculos)):
 		tela.blit(obstaculos[i], obstaculosRect[i])
 		obstaculosRect[i], a, b = movObstaculo(obstaculosRect[i], direcoes[i], pos_y_lista[len(pos_y_lista) - 1], pos_y_inverso_lista[len(pos_y_inverso_lista) - 1])
+		
 		#Acrescenta uma nova posição e apaga uma antiga
 		pos_y_lista.append(a)
 		deleta = pos_y_lista[i]
 		pos_y_lista.remove(deleta)
-
 		pos_y_inverso_lista.append(b)
 		deleta = pos_y_inverso_lista[i]
 		pos_y_inverso_lista.remove(deleta)
-		
-		print(pos_y_inverso_lista)
-		#print(obstaculosRect)
-		
+	
+	#Mostrar Personagem
+	personagemRect, play_pos_x, play_pos_y = movPersonagem(personagemRect, play_pos_x, play_pos_y)
+	tela.blit(personagem, personagemRect)
+
 	#Atualizar a Tela
 	pg.display.flip()
 	time.sleep(0.015)
