@@ -69,13 +69,13 @@ def movObstaculo(obstaculoRect, direcao, pos_y, pos_y_inverso):
 	else:
 		if(direcao == 0):
 			if(pos_y_inverso >= 700):
-				print("entrou")
 				pos_y_inverso = -100
 				aux = obstaculoRect[0]
 				obstaculoRect = aux, pos_y_inverso
 				pos_y_inverso += random.randrange(20)
 	return obstaculoRect, pos_y, pos_y_inverso
 
+#Escolhe o Sprite do Personagem
 def escolherPersonagem(escolha):
 	if(escolha == 0):
 		personagem = player1
@@ -87,13 +87,15 @@ def escolherPersonagem(escolha):
 				personagem = player3
 	return personagem
 
+#Dá a posição inicial do personagem
 def inicioPersonagem(personagem):
 	play_pos_x = 0
 	play_pos_y = 300
 	personagemRect = personagem.get_rect()
 	personagemRect.center = (play_pos_x, play_pos_y)
 	return personagemRect.center, play_pos_x, play_pos_y
-	
+
+#Movimenta a posição do personagem em relação a grade	
 def movPersonagem(personagemRect, play_pos_x, play_pos_y):
 	if keys[pg.K_RIGHT]:
 		play_pos_x+= 80
@@ -104,11 +106,17 @@ def movPersonagem(personagemRect, play_pos_x, play_pos_y):
 	personagemRect = (play_pos_x, play_pos_y)
 	return personagemRect, play_pos_x, play_pos_y
 
-
+#Detecta colisao entre personagem e objeto
+def colisao(personagemRect, obstaculosRect):
+	player = pg.Rect(personagemRect, (80,100))
+	for i in range(0, len(obstaculosRect)):
+		objeto = pg.Rect(obstaculosRect[i], (80,100))
+		if (player.colliderect(objeto)):
+			print("colidiu")
+		else:
+			continue
 
 # --- Configs Iniciais --- #
-
-
 
 #Resolução
 tela = game_init(800, 600)
@@ -126,15 +134,15 @@ player2       = pg.image.load("Sprites/player_02.png")
 player3       = pg.image.load("Sprites/player_03.png")
 
 #Criar Listas
-cima = [carroCima, caminhaoCima]
-baixo = [carroBaixo, caminhaoBaixo]
-obstaculosRect = []
-obstaculos = []
-direcoes = []
-pistas = []
-tipos = []
-pos_x_lista = []
-pos_y_lista = []
+cima                = [carroCima, caminhaoCima]
+baixo               = [carroBaixo, caminhaoBaixo]
+obstaculosRect      = []
+obstaculos          = []
+direcoes            = []
+pistas              = []
+tipos               = []
+pos_x_lista         = []
+pos_y_lista         = []
 pos_y_inverso_lista = []
 
 #Sortear as Pistas e Sprites (até o numero total de pistas)
@@ -191,6 +199,9 @@ while True:
 	personagemRect, play_pos_x, play_pos_y = movPersonagem(personagemRect, play_pos_x, play_pos_y)
 	tela.blit(personagem, personagemRect)
 
+	#Verificar colisao
+	colisao(personagemRect, obstaculosRect)
+
 	#Atualizar a Tela
 	pg.display.flip()
-	time.sleep(0.015)
+	time.sleep(0.030)
