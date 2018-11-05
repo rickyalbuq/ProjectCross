@@ -9,11 +9,10 @@ def game_init(l, a):
 	largura, altura = l, a
 	tamanho = largura, altura
 	estado = 0
-	cont = 0
 	#Configs de Janela
 	tela = pg.display.set_mode(tamanho)
 	pg.display.set_caption("Cross The Road")
-	return tela, estado, cont
+	return tela, estado
 
 def mudancaEstado(estado, mousePressed, mousePosition):
 	clicou = False
@@ -24,15 +23,24 @@ def mudancaEstado(estado, mousePressed, mousePosition):
 			else:
 				clicou = False
 		if(clicou):
-			estado = 2
+			estado = 1
+			cont = 0
 	else:
 		if(estado == 1):
 			if(mousePressed[0] == True):
-				if(mousePosition > (300, 450) and mousePosition < (500, 486)):
-					clicou = True
+				if(mousePosition > (200, 250) and mousePosition < (280, 350)):
+					play1 = True
 				else:
-					clicou = False
-	return estado
+					play1 = False
+				if(mousePosition > (360, 250) and mousePosition < (420, 350)):
+					play2 = True
+				else:
+					play2 = False
+				if(mousePosition > (520, 250) and mousePosition < (600, 350)):
+					play3 = True
+				else:
+					play3 = False
+	return estado, play1, play2, play3
 # --- Configs Iniciais --- #
 
 #Resolução
@@ -100,6 +108,9 @@ while True:
 		pg.display.flip()
 		time.sleep(0.015)
 	else:
+		if(estado == 1):
+			if(cont == 0):
+
 		if(estado == 2):
 			if(cont == 0):
 				#Escolha Aleatoria de Sprite
@@ -159,9 +170,9 @@ while True:
 						if(direcao == 0):
 							if(pos_y_inverso >= 700):
 								pos_y_inverso = -100
-								aux = obstaculoRect[0]
-								obstaculoRect = aux, pos_y_inverso
-								pos_y_inverso += random.randrange(20)
+							aux = obstaculoRect[0]
+							obstaculoRect = aux, pos_y_inverso
+							pos_y_inverso += random.randrange(20)
 					return obstaculoRect, pos_y, pos_y_inverso
 
 				#Escolhe o Sprite do Personagem
@@ -274,6 +285,6 @@ while True:
 			colisao(personagemRect, obstaculosRect)
 			#Atualizar a Tela
 			pg.display.flip()
-			time.sleep(0.030)
+			time.sleep(0.015)
 
 	estado = mudancaEstado(estado, mousePressed, mousePosition)
