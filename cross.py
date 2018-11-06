@@ -110,7 +110,7 @@ while True:
 		tela.blit(autor, (345, 567))
 		#Atualizar a Tela
 		pg.display.flip()
-		time.sleep(0.015)
+		time.sleep(0.033)
 
 	else:
 		if(estado == 1):
@@ -137,14 +137,14 @@ while True:
 			tela.blit(player2, (360, 250))
 			tela.blit(player3, (520, 250))
 
-			tela.blit(texto, (265, 160))
-			tela.blit(nome1, (200, 360))
-			tela.blit(nome2, (360, 360))
-			tela.blit(nome3, (520, 360))	
+			tela.blit(texto, (270, 160))
+			tela.blit(nome1, (208, 360))
+			tela.blit(nome2, (378, 360))
+			tela.blit(nome3, (515, 360))	
 
 			#Atualizar na tela
 			pg.display.flip()
-			time.sleep(0.015)
+			time.sleep(0.033)
 		else:
 			if(estado == 2):
 				if(cont == 0):
@@ -193,21 +193,19 @@ while True:
 
 					#Config de Movimentação
 					def movObstaculo(obstaculoRect, direcao, pos_y, pos_y_inverso):
-						pos_y -= random.randint(0,20)
-						pos_y_inverso += random.randint(0,20)
+						pos_y -= random.randrange(15)
+						pos_y_inverso += random.randrange(15)
 						if(direcao == 1):
 							if(pos_y < -100):
 								pos_y = 700
 							aux = obstaculoRect[0]
 							obstaculoRect = aux, pos_y
-							pos_y -= random.randrange(10)
 						else:
 							if(direcao == 0):
 								if(pos_y_inverso >= 700):
 									pos_y_inverso = -100
 								aux = obstaculoRect[0]
 								obstaculoRect = aux, pos_y_inverso
-								pos_y_inverso += random.randrange(20)
 						return obstaculoRect, pos_y, pos_y_inverso
 
 					#Escolhe o Sprite do Personagem
@@ -235,9 +233,9 @@ while True:
 						if keys[pg.K_RIGHT]:
 							play_pos_x+= 80
 						if keys[pg.K_UP]:
-							play_pos_y-= 100
+							play_pos_y-= 5
 						if keys[pg.K_DOWN]:
-							play_pos_y+= 100
+							play_pos_y+= 5
 						personagemRect = (play_pos_x, play_pos_y)
 						return personagemRect, play_pos_x, play_pos_y
 
@@ -251,10 +249,42 @@ while True:
 							else:
 								continue
 
+					def geraTronco(pos_agua, aux_lista):
+						for i in range(0, len(pos_agua)):
+							aux_lista.append(random.randint(0,1))
+							x = pos_agua[i]
+							y = random.randrange(0,600)
+							troncoRect = (x,y)
+							troncosRect.append(troncoRect)
+						return troncosRect, aux_lista
+
+					def movTronco(troncoRect, aux):
+						x = troncoRect[0]
+						y = troncoRect[1]
+						if(aux == 1):
+							y += random.randint(0,10)
+							if(y > 700):
+								y = -100
+							else:
+								if(y < -100):
+									y = 700
+							troncoRect = (x, y)
+						else:
+							y -= random.randint(0,10)
+							if(y > 700):
+								y = -100
+							else:
+								if(y < -100):
+									y = 700
+							troncoRect = (x, y)
+
+						return troncoRect
+
 					#Carregar Sprites
 					asfalto       = pg.image.load("Sprites/asfalto.png")
 					agua          = pg.image.load("Sprites/agua.png")
 					grama         = pg.image.load("Sprites/grama.png")
+					tronco        = pg.image.load("Sprites/tronco.png")
 					carroCima     = pg.image.load("Sprites/carro_pra_cima.png")
 					carroBaixo    = pg.image.load("Sprites/carro_pra_baixo.png")
 					caminhaoCima  = pg.image.load("Sprites/caminhao_pra_cima.png")
@@ -274,6 +304,9 @@ while True:
 					pos_x_lista         = []
 					pos_y_lista         = []
 					pos_y_inverso_lista = []
+					pos_agua            = []
+					troncosRect         = []
+					aux_lista           = []
 
 					#Sortear as Pistas e Sprites (até o numero total de pistas)
 					for i in range(0,10):
@@ -282,6 +315,8 @@ while True:
 						tipos.append(b)
 						if(tipos[i] == 0):
 							pos_x_lista.append(i*80)
+						if(tipos[i] == 2):
+							pos_agua.append(i*80)
 					for i in range(0, len(pos_x_lista)):
 						c, d = escolheObstaculo(cima, baixo)
 						obstaculos.append(c)
@@ -291,9 +326,13 @@ while True:
 						pos_y_lista.append(h)
 						pos_y_inverso_lista.append(i)
 
+					#Gerar Troncos
+					troncosRect, aux_lista = geraTronco(pos_agua, aux_lista)
+
 					#Gerar Personagem
 					personagem = escolherPersonagem(escolha)
 					personagemRect, play_pos_x, play_pos_y = inicioPersonagem(personagem)
+					#Fim
 					cont += 1
 
 				#Gera pistas
@@ -311,12 +350,19 @@ while True:
 					deleta = pos_y_inverso_lista[i]
 					pos_y_inverso_lista.remove(deleta)
 				
+				#Mover Troncos
+				for i in range(0, len(troncosRect)):
+					tela.blit(tronco, troncosRect[i])
+					troncosRect[i] = movTronco(troncosRect[i], aux_lista[i])
+
 				#Mostrar Personagem
 				personagemRect, play_pos_x, play_pos_y = movPersonagem(personagemRect, play_pos_x, play_pos_y)
 				tela.blit(personagem, personagemRect)
 
 				#Verificar colisao
 				colisao(personagemRect, obstaculosRect)
+				colisao(personagemRect, troncosRect)
+
 				#Atualizar a Tela
 				pg.display.flip()
-				time.sleep(0.015)
+				time.sleep(0.033)
