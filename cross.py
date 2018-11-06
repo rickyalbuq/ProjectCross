@@ -57,6 +57,7 @@ while True:
 		if event.type == pg.QUIT:
 			pg.quit()
 			sys.exit()
+	key = pg.key.get_pressed()[pg.K_RIGHT]
 	keys = pg.key.get_pressed()
 	mousePressed = pg.mouse.get_pressed()
 	mousePosition = pg.mouse.get_pos()
@@ -230,12 +231,20 @@ while True:
 
 					#Movimenta a posição do personagem em relação a grade	
 					def movPersonagem(personagemRect, play_pos_x, play_pos_y):
-						if keys[pg.K_RIGHT]:
+						if key:
+							pg.key.set_repeat(0, 10)
 							play_pos_x+= 80
+							if(play_pos_x >720):
+								play_pos_x = 720
 						if keys[pg.K_UP]:
-							play_pos_y-= 5
+							play_pos_y-= 10
 						if keys[pg.K_DOWN]:
-							play_pos_y+= 5
+							play_pos_y+= 10
+						if(play_pos_y > 530):
+							play_pos_y = 530
+						else:
+							if(play_pos_y < -30):
+								play_pos_y = -30
 						personagemRect = (play_pos_x, play_pos_y)
 						return personagemRect, play_pos_x, play_pos_y
 
@@ -365,4 +374,4 @@ while True:
 
 				#Atualizar a Tela
 				pg.display.flip()
-				time.sleep(0.033)
+				time.sleep(0.066)
