@@ -56,6 +56,7 @@ def mudancaEstado(estado, mousePressed, mousePosition, escolha, cont):
 					else:
 						if(mousePosition > (345, 470) and mousePosition < (450, 489)):
 							estado = 1
+							pontuacao = 0
 							cont = 0
 
 	return estado, escolha, cont
@@ -246,7 +247,7 @@ while True:
 					#Movimenta a posição do personagem em relação a grade	
 					def movPersonagem(personagemRect, play_pos_x, play_pos_y):
 						if key:
-							pg.key.set_repeat(0, 0)
+							pg.key.set_repeat(0, 15)
 							play_pos_x+= 80
 							if(play_pos_x >720):
 								play_pos_x = 720
@@ -320,7 +321,7 @@ while True:
 						x = personagemRect[0]
 						y = troncoColidiu[1]
 						personagemRect = (x, y)
-						return personagemRect
+						return personagemRect, x, y
 
 					def marcarPontos(anterior, atual, pontuacao, recorde):
 						if(anterior < atual):
@@ -415,7 +416,6 @@ while True:
 				play_pos_x_lista.append(play_pos_x)
 				#Contando pontuação
 				pontuacao, recorde = marcarPontos(play_pos_x_lista[0], play_pos_x_lista[1], pontuacao, recorde)
-				play_pos_x_lista.append(play_pos_x)
 				play_pos_x_lista.remove(deleta)
 
 				#Verificar colisao
@@ -423,10 +423,11 @@ while True:
 				troncoColidiu = colisaoTronco(personagemRect, troncosRect)
 
 				#Mover o personagem
-				personagemRect, play_pos_x, play_pos_y = movPersonagem(personagemRect, play_pos_x, play_pos_y)
+				
 				#Mover o jogador junto do tronco
 				if not(troncoColidiu == (0,0)):
-					personagemRect = noTronco(personagemRect, troncoColidiu)
+					personagemRect, play_pos_x, play_pos_y = noTronco(personagemRect, troncoColidiu)
+				personagemRect, play_pos_x, play_pos_y = movPersonagem(personagemRect, play_pos_x, play_pos_y)
 				#Mostrar Personagem
 				tela.blit(personagem, personagemRect)
 
@@ -440,6 +441,8 @@ while True:
 				gameOver        = pg.image.load("Sprites/game_over.png")
 				novamente       = pg.image.load("Sprites/novamente.png")
 				mudarPersonagem = pg.image.load("Sprites/muda_personagem.png")
+				texto = pontuacao
+				pontuacao = 0
 
 				#Mostrar logo
 				tela.blit(gameOver, (277, 100))
