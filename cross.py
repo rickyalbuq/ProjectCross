@@ -283,8 +283,7 @@ while True:
 							objeto = pg.Rect(troncosRect[i], (80,100))
 							if (player.colliderect(objeto)):
 								return troncosRect[i]
-							else:
-								return (0, 0)
+						return (0,0)
 
 					def geraTronco(pos_agua, aux_lista):
 						for i in range(0, len(pos_agua)):
