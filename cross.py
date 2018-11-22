@@ -15,14 +15,13 @@ def game_init(l, a):
 	cont = 0
 	salvo = False
 	mousePressed = False
-	tempo = 0
 	#Configs de Janela
 	tela = pg.display.set_mode(tamanho)
 	pg.display.set_caption("Cross The Road")
-	return tela, estado, cont, escolha, pontuacao, recorde, salvo, mousePressed, tempo
+	return tela, estado, cont, escolha, pontuacao, recorde, salvo, mousePressed
 
 #Altera o estado atual
-def mudancaEstado(estado, mousePressed, mousePosition, escolha, cont, pontuacao, tempo):
+def mudancaEstado(estado, mousePressed, mousePosition, escolha, cont, pontuacao):
 	#Menu
 	if(estado == 0):
 		if mousePressed:
@@ -61,14 +60,12 @@ def mudancaEstado(estado, mousePressed, mousePosition, escolha, cont, pontuacao,
 							estado = 2
 							pontuacao = 0
 							cont = 0
-							tempo = 0
 
 					if(mousePosition > (450, 470)):
 						if(mousePosition < (555, 489)):
 							estado = 1
 							pontuacao = 0
 							cont = 0
-							tempo = 0
 			else:
 				#Congratulações
 				if(estado == 4):
@@ -78,19 +75,16 @@ def mudancaEstado(estado, mousePressed, mousePosition, escolha, cont, pontuacao,
 								estado = 2
 								pontuacao = 0
 								cont = 0
-								tempo = 0
 
 						if(mousePosition > (450, 470)):
 							if(mousePosition < (555, 489)):
 								estado = 1
 								pontuacao = 0
 								cont = 0
-								tempo = 0
-
-	return estado, escolha, cont, pontuacao, tempo
+	return estado, escolha, cont, pontuacao
 
 # --- Configs Resolução--- #
-tela, estado, cont, escolha, pontuacao, recorde, salvo, mousePressed, tempo = game_init(800, 600)
+tela, estado, cont, escolha, pontuacao, recorde, salvo, mousePressed = game_init(800, 600)
 
 # --- Loop Principal --- #
 while True:
@@ -113,7 +107,7 @@ while True:
 	
 
 	#Função de trocar estado
-	estado, escolha, cont, pontuacao, tempo = mudancaEstado(estado, mousePressed, mousePosition, escolha, cont, pontuacao, tempo)
+	estado, escolha, cont, pontuacao = mudancaEstado(estado, mousePressed, mousePosition, escolha, cont, pontuacao)
 	
 	# --- Mostrar na Tela --- #
 	if(estado == 0):
@@ -243,21 +237,22 @@ while True:
 							x+=80
 
 					#Config de Movimentação
-					def movObstaculo(obstaculoRect, direcao, pos_y, pos_y_inverso):
-						pos_y -= random.randrange(15)
-						pos_y_inverso += random.randrange(15)
+					def movObstaculo(obstaculoRect, direcao):
+						pos_y = obstaculoRect[1]
 						if(direcao == 1):
 							if(pos_y < -100):
 								pos_y = 700
 							aux = obstaculoRect[0]
+							pos_y -= random.randint(0,15)
 							obstaculoRect = aux, pos_y
 						else:
 							if(direcao == 0):
-								if(pos_y_inverso >= 700):
-									pos_y_inverso = -100
+								if(pos_y >= 700):
+									pos_y = -100
 								aux = obstaculoRect[0]
-								obstaculoRect = aux, pos_y_inverso
-						return obstaculoRect, pos_y, pos_y_inverso
+								pos_y += random.randint(0,15)
+								obstaculoRect = aux, pos_y
+						return obstaculoRect
 
 					#Escolhe o Sprite do Personagem
 					def escolherPersonagem(escolha):
@@ -283,13 +278,13 @@ while True:
 					def movPersonagem(personagemRect, play_pos_x, play_pos_y, pontuacao):
 						if keys[pg.K_RIGHT]:
 							play_pos_x+= 80
-							pg.time.delay(100)
+							pg.time.delay(125)
 							if(play_pos_x >720):
 								play_pos_x = 720
 						if keys[pg.K_LEFT]:
 							play_pos_x-= 80
 							pontuacao -= 1
-							pg.time.delay(100)
+							pg.time.delay(125)
 							if(play_pos_x < 0):
 								play_pos_x = 0
 						if keys[pg.K_UP]:
@@ -381,11 +376,6 @@ while True:
 							return 4
 						return "null"
 
-					def relogio(tempo):
-						if(pg.time.get_ticks()%1000 == 0):
-							tempo+= 1
-						return tempo
-
 					#Carregar Sprites
 					asfalto       = pg.image.load("Sprites/asfalto.png")
 					agua          = pg.image.load("Sprites/agua.png")
@@ -444,24 +434,17 @@ while True:
 					play_pos_x_lista.append(play_pos_x)
 					#Fim
 					cont += 1
+					ti=pg.time.get_ticks()
+
 
 				#Gera pistas
 				geradorPista(pistas)
-				#Inicia contador
-				tempo = relogio(tempo)
 
 				#Loop de Mostrar Obstaculos
 				for i in range(0, len(obstaculos)):
+					obstaculosRect[i] = movObstaculo(obstaculosRect[i], direcoes[i])
 					tela.blit(obstaculos[i], obstaculosRect[i])
-					obstaculosRect[i], a, b = movObstaculo(obstaculosRect[i], direcoes[i], pos_y_lista[len(pos_y_lista) - 1], pos_y_inverso_lista[len(pos_y_inverso_lista) - 1])
 					
-					#Acrescenta uma nova posição e apaga uma antiga
-					pos_y_lista.append(a)
-					deleta = pos_y_lista[i]
-					pos_y_lista.remove(deleta)
-					pos_y_inverso_lista.append(b)
-					deleta = pos_y_inverso_lista[i]
-					pos_y_inverso_lista.remove(deleta)
 				
 				#Mover Troncos
 				for i in range(0, len(troncosRect)):
@@ -476,15 +459,16 @@ while True:
 				play_pos_x_lista.remove(deleta)
 
 				#Verificar colisao
+				troncoColidiu, salvo = colisaoTronco(personagemRect, troncosRect)
 				aux  = morteNagua(salvo, play_pos_x, pos_agua)
 				if(aux != "null"):
 					estado = 3
 				aux  = colisao(personagemRect, obstaculosRect)
 				if(aux != "null"):
 					estado = 3
-				troncoColidiu, salvo = colisaoTronco(personagemRect, troncosRect)
 				aux = vencer(play_pos_x)
 				if(aux != "null"):
+					tf=pg.time.get_ticks()
 					estado = 4
 				
 				#Mover o jogador junto do tronco
@@ -531,7 +515,7 @@ while True:
 						novamente       = pg.image.load("Sprites/novamente.png")
 						mudarPersonagem = pg.image.load("Sprites/muda_personagem.png")
 						pontos          = str(pontuacao)
-						clk             = str(tempo)
+						clk             = str((tf-ti)//1000)
 
 						fonte = pg.font.Font(None, 32)
 						texto1 = fonte.render("Tempo: "+clk+" seg", True, (255,255,255))
