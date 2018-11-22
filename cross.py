@@ -15,10 +15,11 @@ def game_init(l, a):
 	cont = 0
 	salvo = False
 	mousePressed = False
+	musica  = pg.mixer.Sound("Sprites/musica.mp3")
 	#Configs de Janela
 	tela = pg.display.set_mode(tamanho)
 	pg.display.set_caption("Cross The Road")
-	return tela, estado, cont, escolha, pontuacao, recorde, salvo, mousePressed
+	return tela, estado, cont, escolha, pontuacao, recorde, salvo, mousePressed, musica
 
 #Altera o estado atual
 def mudancaEstado(estado, mousePressed, mousePosition, escolha, cont, pontuacao):
@@ -84,7 +85,7 @@ def mudancaEstado(estado, mousePressed, mousePosition, escolha, cont, pontuacao)
 	return estado, escolha, cont, pontuacao
 
 # --- Configs Resolução--- #
-tela, estado, cont, escolha, pontuacao, recorde, salvo, mousePressed = game_init(800, 600)
+tela, estado, cont, escolha, pontuacao, recorde, salvo, mousePressed, musica = game_init(800, 600)
 
 # --- Loop Principal --- #
 while True:
@@ -105,7 +106,7 @@ while True:
 	key = pg.key.get_pressed()[pg.K_RIGHT]
 	keys = pg.key.get_pressed()
 	
-
+	musica.Play()
 	#Função de trocar estado
 	estado, escolha, cont, pontuacao = mudancaEstado(estado, mousePressed, mousePosition, escolha, cont, pontuacao)
 	
@@ -300,12 +301,13 @@ while True:
 						return personagemRect, play_pos_x, play_pos_y, pontuacao
 
 					#Detecta colisao entre personagem e objeto
-					def colisao(personagemRect, obstaculosRect):
+					def colisao(personagemRect, obstaculosRect, buzina):
 						player = pg.Rect(personagemRect, (80,100))
 						for i in range(0, len(obstaculosRect)):
 							objeto = pg.Rect(obstaculosRect[i], (80,100))
 							if (player.colliderect(objeto)):
 								cont = 0
+								buzina.play()
 								return 3
 						return "null"
 
@@ -388,6 +390,7 @@ while True:
 					player1       = pg.image.load("Sprites/player_01.png")
 					player2       = pg.image.load("Sprites/player_02.png")
 					player3       = pg.image.load("Sprites/player_03.png")
+					buzina        = pg.mixer.Sound("Sprites/buzina.wav")
 
 					#Criar Listas
 					cima                = [carroCima, caminhaoCima]
@@ -399,8 +402,6 @@ while True:
 					tipos               = [1]
 					pos_x_lista         = []
 					play_pos_x_lista    = []
-					pos_y_lista         = []
-					pos_y_inverso_lista = []
 					pos_agua            = []
 					troncosRect         = []
 					aux_lista           = []
@@ -463,7 +464,7 @@ while True:
 				aux  = morteNagua(salvo, play_pos_x, pos_agua)
 				if(aux != "null"):
 					estado = 3
-				aux  = colisao(personagemRect, obstaculosRect)
+				aux  = colisao(personagemRect, obstaculosRect, buzina)
 				if(aux != "null"):
 					estado = 3
 				aux = vencer(play_pos_x)
