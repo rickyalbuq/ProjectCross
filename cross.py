@@ -13,56 +13,84 @@ def game_init(l, a):
 	pontuacao = 0
 	recorde = 0
 	cont = 0
+	salvo = False
+	mousePressed = False
+	tempo = 0
 	#Configs de Janela
 	tela = pg.display.set_mode(tamanho)
 	pg.display.set_caption("Cross The Road")
-	return tela, estado, cont, escolha, pontuacao, recorde
+	return tela, estado, cont, escolha, pontuacao, recorde, salvo, mousePressed, tempo
 
 #Altera o estado atual
-def mudancaEstado(estado, mousePressed, mousePosition, escolha, cont):
+def mudancaEstado(estado, mousePressed, mousePosition, escolha, cont, pontuacao, tempo):
+	#Menu
 	if(estado == 0):
-		if(mousePressed[0] == True):
-			if(mousePosition > (300, 450) and mousePosition < (500, 486)):
-				estado = 1
-				cont = 0
-
-	else:
-		if(estado == 1):
-			if(mousePressed[0] == True):
-				if(mousePosition > (200, 250) and mousePosition < (280, 350)):
-					escolha = 0
-					estado = 2
+		if mousePressed:
+			if(mousePosition > (300, 450)):
+				if(mousePosition < (500, 486)):
+					estado = 1
 					cont = 0
 
-				else:
-					if(mousePosition > (360, 250) and mousePosition < (420, 350)):
+	else:
+		#Escolha de personagem
+		if(estado == 1):
+			if mousePressed:
+				if(mousePosition > (200, 250)):
+					if(mousePosition < (280, 350)):
+						escolha = 0
+						estado = 2
+						cont = 0
+
+				if(mousePosition > (360, 250)):
+					if(mousePosition < (420, 350)):
 						escolha = 1
 						estado = 2
 						cont = 0
 
-					else:	
-						if(mousePosition > (520, 250) and mousePosition < (600, 350)):
-							escolha = 2
-							estado = 2
-							cont = 0
-		else:
-			if(estado == 3):
-				if(mousePressed[0] == True):
-					if(mousePosition > (345, 400) and mousePosition < (450, 419)):
+				if(mousePosition > (520, 250)):
+					if(mousePosition < (600, 350)):
+						escolha = 2
 						estado = 2
-						pontuacao = 0
 						cont = 0
+		else:
+			#GameOver
+			if(estado == 3):
+				if mousePressed:
+					if(mousePosition > (225, 470)):
+						if(mousePosition < (330, 489)):
+							estado = 2
+							pontuacao = 0
+							cont = 0
+							tempo = 0
 
-					else:
-						if(mousePosition > (345, 470) and mousePosition < (450, 489)):
+					if(mousePosition > (450, 470)):
+						if(mousePosition < (555, 489)):
 							estado = 1
 							pontuacao = 0
 							cont = 0
+							tempo = 0
+			else:
+				#Congratulações
+				if(estado == 4):
+					if(mousePressed):
+						if(mousePosition > (225, 470)):
+							if(mousePosition < (330, 489)):
+								estado = 2
+								pontuacao = 0
+								cont = 0
+								tempo = 0
 
-	return estado, escolha, cont
+						if(mousePosition > (450, 470)):
+							if(mousePosition < (555, 489)):
+								estado = 1
+								pontuacao = 0
+								cont = 0
+								tempo = 0
+
+	return estado, escolha, cont, pontuacao, tempo
 
 # --- Configs Resolução--- #
-tela, estado, cont, escolha, pontuacao, recorde = game_init(800, 600)
+tela, estado, cont, escolha, pontuacao, recorde, salvo, mousePressed, tempo = game_init(800, 600)
 
 # --- Loop Principal --- #
 while True:
@@ -72,13 +100,20 @@ while True:
 		if event.type == pg.QUIT:
 			pg.quit()
 			sys.exit()
+		if event.type == pg.MOUSEBUTTONDOWN:
+			mousePressed = True
+			pg.time.delay(125)
+		if event.type == pg.MOUSEBUTTONUP:
+			mousePressed = False
+			pg.time.delay(125)
+		
+	mousePosition = pg.mouse.get_pos()
 	key = pg.key.get_pressed()[pg.K_RIGHT]
 	keys = pg.key.get_pressed()
-	mousePressed = pg.mouse.get_pressed()
-	mousePosition = pg.mouse.get_pos()
+	
 
 	#Função de trocar estado
-	estado, escolha, cont = mudancaEstado(estado, mousePressed, mousePosition, escolha, cont)
+	estado, escolha, cont, pontuacao, tempo = mudancaEstado(estado, mousePressed, mousePosition, escolha, cont, pontuacao, tempo)
 	
 	# --- Mostrar na Tela --- #
 	if(estado == 0):
@@ -245,12 +280,18 @@ while True:
 						return personagemRect.center, play_pos_x, play_pos_y
 
 					#Movimenta a posição do personagem em relação a grade	
-					def movPersonagem(personagemRect, play_pos_x, play_pos_y):
-						if key:
-							pg.key.set_repeat(0, 15)
+					def movPersonagem(personagemRect, play_pos_x, play_pos_y, pontuacao):
+						if keys[pg.K_RIGHT]:
 							play_pos_x+= 80
+							pg.time.delay(100)
 							if(play_pos_x >720):
 								play_pos_x = 720
+						if keys[pg.K_LEFT]:
+							play_pos_x-= 80
+							pontuacao -= 1
+							pg.time.delay(100)
+							if(play_pos_x < 0):
+								play_pos_x = 0
 						if keys[pg.K_UP]:
 							play_pos_y-= 10
 						if keys[pg.K_DOWN]:
@@ -261,7 +302,7 @@ while True:
 							if(play_pos_y < -30):
 								play_pos_y = -30
 						personagemRect = (play_pos_x, play_pos_y)
-						return personagemRect, play_pos_x, play_pos_y
+						return personagemRect, play_pos_x, play_pos_y, pontuacao
 
 					#Detecta colisao entre personagem e objeto
 					def colisao(personagemRect, obstaculosRect):
@@ -269,12 +310,9 @@ while True:
 						for i in range(0, len(obstaculosRect)):
 							objeto = pg.Rect(obstaculosRect[i], (80,100))
 							if (player.colliderect(objeto)):
-								estado = 3
 								cont = 0
-								break
-							else:
-								estado = 2
-						return estado
+								return 3
+						return "null"
 
 					#Detecta colisao entre personagem e um troco
 					def colisaoTronco(personagemRect, troncosRect):
@@ -282,8 +320,8 @@ while True:
 						for i in range(0, len(troncosRect)):
 							objeto = pg.Rect(troncosRect[i], (80,100))
 							if (player.colliderect(objeto)):
-								return troncosRect[i]
-						return (0,0)
+								return troncosRect[i], True
+						return (0,0), False
 
 					def geraTronco(pos_agua, aux_lista):
 						for i in range(0, len(pos_agua)):
@@ -331,6 +369,23 @@ while True:
 							print("recorde:", pontuacao)
 						return pontuacao, recorde
 
+					def morteNagua(salvo, play_pos_x, pos_agua):
+						for i in range(len(pos_agua)):
+							if(pos_agua[i] == play_pos_x):
+								if not salvo:
+									return 3
+						return "null"
+
+					def vencer(play_pos_x):
+						if(play_pos_x >= 720):
+							return 4
+						return "null"
+
+					def relogio(tempo):
+						if(pg.time.get_ticks()%1000 == 0):
+							tempo+= 1
+						return tempo
+
 					#Carregar Sprites
 					asfalto       = pg.image.load("Sprites/asfalto.png")
 					agua          = pg.image.load("Sprites/agua.png")
@@ -350,8 +405,8 @@ while True:
 					obstaculosRect      = []
 					obstaculos          = []
 					direcoes            = []
-					pistas              = []
-					tipos               = []
+					pistas              = [grama]
+					tipos               = [1]
 					pos_x_lista         = []
 					play_pos_x_lista    = []
 					pos_y_lista         = []
@@ -361,7 +416,7 @@ while True:
 					aux_lista           = []
 
 					#Sortear as Pistas e Sprites (até o numero total de pistas)
-					for i in range(0,10):
+					for i in range(1,9):
 						a, b= tipoPista()
 						pistas.append(a)
 						tipos.append(b)
@@ -369,6 +424,8 @@ while True:
 							pos_x_lista.append(i*80)
 						if(tipos[i] == 2):
 							pos_agua.append(i*80)
+					pistas.append(grama) #Garante q o final será grama
+					tipos.append(1)
 					for i in range(0, len(pos_x_lista)):
 						c, d = escolheObstaculo(cima, baixo)
 						obstaculos.append(c)
@@ -390,6 +447,8 @@ while True:
 
 				#Gera pistas
 				geradorPista(pistas)
+				#Inicia contador
+				tempo = relogio(tempo)
 
 				#Loop de Mostrar Obstaculos
 				for i in range(0, len(obstaculos)):
@@ -408,7 +467,6 @@ while True:
 				for i in range(0, len(troncosRect)):
 					tela.blit(tronco, troncosRect[i])
 					troncosRect[i] = movTronco(troncosRect[i], aux_lista[i])
-
 				
 				#Sobre a pontuação
 				deleta = play_pos_x_lista[0]
@@ -418,36 +476,74 @@ while True:
 				play_pos_x_lista.remove(deleta)
 
 				#Verificar colisao
-				estado  = colisao(personagemRect, obstaculosRect)
-				troncoColidiu = colisaoTronco(personagemRect, troncosRect)
-
-				#Mover o personagem
+				aux  = morteNagua(salvo, play_pos_x, pos_agua)
+				if(aux != "null"):
+					estado = 3
+				aux  = colisao(personagemRect, obstaculosRect)
+				if(aux != "null"):
+					estado = 3
+				troncoColidiu, salvo = colisaoTronco(personagemRect, troncosRect)
+				aux = vencer(play_pos_x)
+				if(aux != "null"):
+					estado = 4
 				
 				#Mover o jogador junto do tronco
 				if not(troncoColidiu == (0,0)):
 					personagemRect, play_pos_x, play_pos_y = noTronco(personagemRect, troncoColidiu)
-				personagemRect, play_pos_x, play_pos_y = movPersonagem(personagemRect, play_pos_x, play_pos_y)
+				personagemRect, play_pos_x, play_pos_y, pontuacao = movPersonagem(personagemRect, play_pos_x, play_pos_y, pontuacao)
+
 				#Mostrar Personagem
 				tela.blit(personagem, personagemRect)
-
 				#Atualizar a Tela
 				pg.display.flip()
 				time.sleep(0.066)
 
-			if(estado == 3):
+			else:
+				if(estado == 3):
 
-				bg              = pg.draw.rect(tela, (0,0,0), [0,0,800,600])
-				gameOver        = pg.image.load("Sprites/game_over.png")
-				novamente       = pg.image.load("Sprites/novamente.png")
-				mudarPersonagem = pg.image.load("Sprites/muda_personagem.png")
-				texto = pontuacao
-				pontuacao = 0
+					bg              = pg.draw.rect(tela, (0,0,0), [0,0,800,600])
+					gameOver        = pg.image.load("Sprites/game_over.png")
+					novamente       = pg.image.load("Sprites/novamente.png")
+					mudarPersonagem = pg.image.load("Sprites/muda_personagem.png")
+					pontos          = str(pontuacao)
+					recordePonto    = str(recorde)
 
-				#Mostrar logo
-				tela.blit(gameOver, (277, 100))
-				#Mostrar textos
-				tela.blit(novamente, (345, 400))
-				tela.blit(mudarPersonagem, (345, 470))
-				#Atualizar a Tela
-				pg.display.flip()
-				time.sleep(0.033)
+					fonte = pg.font.Font(None, 32)
+					texto1 = fonte.render("Pontuação: "+pontos, True, (255,255,255))
+					texto2 = fonte.render("Recorde: "+recordePonto, True, (255,255,255))
+
+
+					#Mostrar logo
+					tela.blit(gameOver, (277, 150))
+					#Mostrar textos
+					tela.blit(texto1, (250, 50))
+					tela.blit(texto2, (420, 50))
+					tela.blit(novamente, (225, 470))
+					tela.blit(mudarPersonagem, (450, 470))
+					#Atualizar a Tela
+					pg.display.flip()
+					time.sleep(0.033)
+
+				else:
+					if(estado == 4):
+
+						bg              = pg.draw.rect(tela, (0,0,0), [0,0,800,600])
+						novamente       = pg.image.load("Sprites/novamente.png")
+						mudarPersonagem = pg.image.load("Sprites/muda_personagem.png")
+						pontos          = str(pontuacao)
+						clk             = str(tempo)
+
+						fonte = pg.font.Font(None, 32)
+						texto1 = fonte.render("Tempo: "+clk+" seg", True, (255,255,255))
+						texto2 = fonte.render("Parabéns, sua pontuação foi: "+pontos+" pontos", True, (255,255,255))
+
+						#Mostrar logo
+						tela.blit(personagem, (360, 180))
+						#Mostrar textos
+						tela.blit(texto1, (325, 100))
+						tela.blit(texto2, (200, 325))
+						tela.blit(novamente, (225, 470))
+						tela.blit(mudarPersonagem, (450, 470))
+						#Atualizar a Tela
+						pg.display.flip()
+						time.sleep(0.033)
