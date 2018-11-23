@@ -15,7 +15,8 @@ def game_init(l, a):
 	cont = 0
 	salvo = False
 	mousePressed = False
-	musica  = pg.mixer.Sound("Sprites/musica.mp3")
+	musica  = pg.mixer.Sound("Sprites/musica.wav")
+	musica.play()
 	#Configs de Janela
 	tela = pg.display.set_mode(tamanho)
 	pg.display.set_caption("Cross The Road")
@@ -55,30 +56,36 @@ def mudancaEstado(estado, mousePressed, mousePosition, escolha, cont, pontuacao)
 		else:
 			#GameOver
 			if(estado == 3):
+				musica.stop()
 				if mousePressed:
 					if(mousePosition > (225, 470)):
 						if(mousePosition < (330, 489)):
+							aguaSom.stop()
 							estado = 2
 							pontuacao = 0
 							cont = 0
 
 					if(mousePosition > (450, 470)):
 						if(mousePosition < (555, 489)):
+							aguaSom.stop()
 							estado = 1
 							pontuacao = 0
 							cont = 0
 			else:
 				#Congratulações
 				if(estado == 4):
+					musica.stop()
 					if(mousePressed):
 						if(mousePosition > (225, 470)):
 							if(mousePosition < (330, 489)):
+								parabens.stop()
 								estado = 2
 								pontuacao = 0
 								cont = 0
 
 						if(mousePosition > (450, 470)):
 							if(mousePosition < (555, 489)):
+								parabens.stop()
 								estado = 1
 								pontuacao = 0
 								cont = 0
@@ -106,7 +113,6 @@ while True:
 	key = pg.key.get_pressed()[pg.K_RIGHT]
 	keys = pg.key.get_pressed()
 	
-	musica.Play()
 	#Função de trocar estado
 	estado, escolha, cont, pontuacao = mudancaEstado(estado, mousePressed, mousePosition, escolha, cont, pontuacao)
 	
@@ -194,6 +200,8 @@ while True:
 		else:
 			if(estado == 2):
 				if(cont == 0):
+					musica.stop()
+					musica.play()
 					#Escolha Aleatoria de Sprite
 					def escolheObstaculo(cima, baixo):
 						direcao = random.randint(0,1)
@@ -360,21 +368,21 @@ while True:
 					def marcarPontos(anterior, atual, pontuacao, recorde):
 						if(anterior < atual):
 							pontuacao+=1
-							print("pontuação:", pontuacao)
 						if(pontuacao > recorde):
 							recorde = pontuacao
-							print("recorde:", pontuacao)
 						return pontuacao, recorde
 
 					def morteNagua(salvo, play_pos_x, pos_agua):
 						for i in range(len(pos_agua)):
 							if(pos_agua[i] == play_pos_x):
 								if not salvo:
+									aguaSom.play()
 									return 3
 						return "null"
 
 					def vencer(play_pos_x):
 						if(play_pos_x >= 720):
+							parabens.play()
 							return 4
 						return "null"
 
@@ -391,6 +399,8 @@ while True:
 					player2       = pg.image.load("Sprites/player_02.png")
 					player3       = pg.image.load("Sprites/player_03.png")
 					buzina        = pg.mixer.Sound("Sprites/buzina.wav")
+					aguaSom       = pg.mixer.Sound("Sprites/agua.wav")
+					parabens      = pg.mixer.Sound("Sprites/parabens.wav")
 
 					#Criar Listas
 					cima                = [carroCima, caminhaoCima]
@@ -423,8 +433,6 @@ while True:
 						direcoes.append(d)
 						g, h, i = posicaoInicial(obstaculos[i], direcoes[i], pos_x_lista[i])
 						obstaculosRect.append(g)
-						pos_y_lista.append(h)
-						pos_y_inverso_lista.append(i)
 
 					#Gerar Troncos
 					troncosRect, aux_lista = geraTronco(pos_agua, aux_lista)
