@@ -16,7 +16,7 @@ def game_init(l, a):
 	salvo = False
 	mousePressed = False
 	musica  = pg.mixer.Sound("Sprites/musica.wav")
-	musica.play()
+	musica.play() 
 	#Configs de Janela
 	tela = pg.display.set_mode(tamanho)
 	pg.display.set_caption("Cross The Road")
@@ -292,7 +292,6 @@ while True:
 								play_pos_x = 720
 						if keys[pg.K_LEFT]:
 							play_pos_x-= 80
-							pontuacao -= 1
 							pg.time.delay(125)
 							if(play_pos_x < 0):
 								play_pos_x = 0
@@ -365,13 +364,6 @@ while True:
 						personagemRect = (x, y)
 						return personagemRect, x, y
 
-					def marcarPontos(anterior, atual, pontuacao, recorde):
-						if(anterior < atual):
-							pontuacao+=1
-						if(pontuacao > recorde):
-							recorde = pontuacao
-						return pontuacao, recorde
-
 					def morteNagua(salvo, play_pos_x, pos_agua):
 						for i in range(len(pos_agua)):
 							if(pos_agua[i] == play_pos_x):
@@ -411,7 +403,6 @@ while True:
 					pistas              = [grama]
 					tipos               = [1]
 					pos_x_lista         = []
-					play_pos_x_lista    = []
 					pos_agua            = []
 					troncosRect         = []
 					aux_lista           = []
@@ -440,7 +431,6 @@ while True:
 					#Gerar Personagem
 					personagem = escolherPersonagem(escolha)
 					personagemRect, play_pos_x, play_pos_y = inicioPersonagem(personagem)
-					play_pos_x_lista.append(play_pos_x)
 					#Fim
 					cont += 1
 					ti=pg.time.get_ticks()
@@ -459,13 +449,6 @@ while True:
 				for i in range(0, len(troncosRect)):
 					tela.blit(tronco, troncosRect[i])
 					troncosRect[i] = movTronco(troncosRect[i], aux_lista[i])
-				
-				#Sobre a pontuação
-				deleta = play_pos_x_lista[0]
-				play_pos_x_lista.append(play_pos_x)
-				#Contando pontuação
-				pontuacao, recorde = marcarPontos(play_pos_x_lista[0], play_pos_x_lista[1], pontuacao, recorde)
-				play_pos_x_lista.remove(deleta)
 
 				#Verificar colisao
 				troncoColidiu, salvo = colisaoTronco(personagemRect, troncosRect)
@@ -498,19 +481,16 @@ while True:
 					gameOver        = pg.image.load("Sprites/game_over.png")
 					novamente       = pg.image.load("Sprites/novamente.png")
 					mudarPersonagem = pg.image.load("Sprites/muda_personagem.png")
-					pontos          = str(pontuacao)
 					recordePonto    = str(recorde)
 
 					fonte = pg.font.Font(None, 32)
-					texto1 = fonte.render("Pontuação: "+pontos, True, (255,255,255))
-					texto2 = fonte.render("Recorde: "+recordePonto, True, (255,255,255))
+					texto2 = fonte.render("Recorde: "+recordePonto+" pontos", True, (255,255,255))
 
 
 					#Mostrar logo
 					tela.blit(gameOver, (277, 150))
 					#Mostrar textos
-					tela.blit(texto1, (250, 50))
-					tela.blit(texto2, (420, 50))
+					tela.blit(texto2, (300, 50))
 					tela.blit(novamente, (225, 470))
 					tela.blit(mudarPersonagem, (450, 470))
 					#Atualizar a Tela
@@ -520,11 +500,20 @@ while True:
 				else:
 					if(estado == 4):
 
+						tempo = (tf-ti)//1000
+
+						if(tempo<=60):
+							pontuacao = round(-1 * tempo + 100)
+						else:
+							pontuacao = 0
+						if(pontuacao > recorde):
+							recorde = pontuacao
+
 						bg              = pg.draw.rect(tela, (0,0,0), [0,0,800,600])
 						novamente       = pg.image.load("Sprites/novamente.png")
 						mudarPersonagem = pg.image.load("Sprites/muda_personagem.png")
 						pontos          = str(pontuacao)
-						clk             = str((tf-ti)//1000)
+						clk             = str(tempo)
 
 						fonte = pg.font.Font(None, 32)
 						texto1 = fonte.render("Tempo: "+clk+" seg", True, (255,255,255))
