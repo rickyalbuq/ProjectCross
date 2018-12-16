@@ -64,7 +64,7 @@ Para mais informações sobre a biblioteca acesse https://pygame.org.
    **Utilização:**
 
    ```python
-   menuPista(asfalto):
+   menuPista(asfalto)
    ```
 
    **Parâmetros:**
@@ -93,7 +93,12 @@ Para mais informações sobre a biblioteca acesse https://pygame.org.
    **Descrição:**
 
    ​	Função que movimenta as sprites de automóveis para direita e para esquerda na tela do menu inicial, com velocidade aleatórias.
+   **Utilização:**
 
+   ```python
+   obj1, obj2, esquerda, direita = movCarroMenu(obj1, obj2, esquerda, direita)
+   ```
+   
    **Parâmetros:**
 
    ​	*`obj1`:* Recebe um objeto referente a uma imagem de automóvel virado para esquerda;
