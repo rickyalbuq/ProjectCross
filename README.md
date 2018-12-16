@@ -93,6 +93,7 @@ Para mais informações sobre a biblioteca acesse https://pygame.org.
    **Descrição:**
 
    ​	Função que movimenta as sprites de automóveis para direita e para esquerda na tela do menu inicial, com velocidade aleatórias.
+   
    **Utilização:**
 
    ```python
